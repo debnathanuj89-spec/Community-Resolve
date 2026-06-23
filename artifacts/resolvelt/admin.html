@@ -120,6 +120,7 @@
                   <span class="search-icon">🔍</span>
                   <input type="search" id="search-input" class="form-control" placeholder="Search issues…" style="padding-left:2.25rem;width:180px;">
                 </div>
+                <select class="form-control" id="manage-dist-filter" style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Districts</option></select>
                 <select class="form-control" id="manage-cat-filter"  style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Categories</option></select>
                 <select class="form-control" id="manage-stat-filter" style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Statuses</option></select>
               </div>
@@ -130,6 +131,7 @@
                 <thead>
                   <tr>
                     <th>Issue</th>
+                    <th>District</th>
                     <th>Category</th>
                     <th>Status</th>
                     <th>Upvotes</th>
@@ -294,10 +296,12 @@
     // ── Issues Table ──
     function renderTable(issues) {
       const search = (document.getElementById("search-input")?.value || "").toLowerCase();
+      const distF  = document.getElementById("manage-dist-filter")?.value || "";
       const catF   = document.getElementById("manage-cat-filter")?.value  || "";
       const statF  = document.getElementById("manage-stat-filter")?.value || "";
 
       let list = issues;
+      if (distF)  list = list.filter(i => i.district === distF);
       if (catF)   list = list.filter(i => i.category === catF);
       if (statF)  list = list.filter(i => i.status   === statF);
       if (search) list = list.filter(i =>
@@ -327,6 +331,7 @@
               <div style="font-size:.77rem;color:var(--text-muted);margin-top:.2rem;">📍 ${escHtml((issue.address||"").substring(0,40))}</div>
               <div style="font-size:.77rem;color:var(--text-muted);">👤 ${escHtml(issue.reporterName||issue.reporterEmail||"Anonymous")}</div>
             </td>
+            <td style="font-size:.82rem;white-space:nowrap;">${escHtml(getDistrictLabel(issue.district)||"—")}</td>
             <td>${renderCategoryBadge(issue.category)}</td>
             <td>${renderStatusBadge(issue.status)}</td>
             <td style="text-align:center;font-weight:700;">👍 ${issue.upvotes||0}</td>
@@ -369,8 +374,10 @@
     }
 
     // Filters
+    populateDistrictSelect(document.getElementById("manage-dist-filter"), false);
     populateCategorySelect(document.getElementById("manage-cat-filter"), false);
     populateStatusSelect(document.getElementById("manage-stat-filter"), false);
+    document.getElementById("manage-dist-filter").addEventListener("change", () => renderTable(allIssues));
     document.getElementById("manage-cat-filter").addEventListener("change",  () => renderTable(allIssues));
     document.getElementById("manage-stat-filter").addEventListener("change", () => renderTable(allIssues));
     document.getElementById("search-input").addEventListener("input",        () => renderTable(allIssues));

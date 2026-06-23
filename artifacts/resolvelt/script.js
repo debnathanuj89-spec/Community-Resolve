@@ -41,9 +41,31 @@ const ISSUE_STATUSES = [
   { value: "closed",      label: "Closed",      badgeClass: "badge-closed" }
 ];
 
-// Default map center — can be overridden per page
-const DEFAULT_MAP_CENTER = [40.7128, -74.0060]; // New York City
-const DEFAULT_MAP_ZOOM   = 12;
+// Default map center — Agartala, Tripura
+const DEFAULT_MAP_CENTER = [23.8315, 91.2868];
+const DEFAULT_MAP_ZOOM   = 10;
+
+// Tripura districts
+const TRIPURA_DISTRICTS = [
+  { value: "agartala",      label: "🏙️ Agartala" },
+  { value: "west_tripura",  label: "📍 West Tripura" },
+  { value: "sepahijala",    label: "📍 Sepahijala" },
+  { value: "gomati",        label: "📍 Gomati" },
+  { value: "south_tripura", label: "📍 South Tripura" },
+  { value: "khowai",        label: "📍 Khowai" },
+  { value: "dhalai",        label: "📍 Dhalai" },
+  { value: "unakoti",       label: "📍 Unakoti" },
+  { value: "north_tripura", label: "📍 North Tripura" }
+];
+
+// Approximate bounding box for Tripura
+const TRIPURA_BOUNDS = { south: 22.929, north: 24.539, west: 91.159, east: 92.327 };
+
+/** Returns true if the lat/lng falls within Tripura's bounding box. */
+function isInTripura(lat, lng) {
+  return lat >= TRIPURA_BOUNDS.south && lat <= TRIPURA_BOUNDS.north &&
+         lng >= TRIPURA_BOUNDS.west  && lng <= TRIPURA_BOUNDS.east;
+}
 
 // Firestore collection names
 const COLLECTIONS = {
@@ -524,6 +546,25 @@ function populateCategorySelect(selectEl, includeAll = false) {
     opt.textContent = cat.label;
     selectEl.appendChild(opt);
   });
+}
+
+/**
+ * Populate a <select> with Tripura district options.
+ */
+function populateDistrictSelect(selectEl, includeAll = false) {
+  if (includeAll) selectEl.innerHTML += `<option value="">All Districts</option>`;
+  TRIPURA_DISTRICTS.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d.value;
+    opt.textContent = d.label;
+    selectEl.appendChild(opt);
+  });
+}
+
+/** Get human-readable district label. */
+function getDistrictLabel(value) {
+  const d = TRIPURA_DISTRICTS.find(d => d.value === value);
+  return d ? d.label : value;
 }
 
 /**

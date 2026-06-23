@@ -90,6 +90,7 @@
             <div class="section-title" style="flex-wrap:wrap;gap:.75rem;">
               <h2>All Community Issues</h2>
               <div class="flex gap-1 items-center" style="flex-wrap:wrap;">
+                <select class="form-control" id="all-dist-filter" style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Districts</option></select>
                 <select class="form-control" id="all-cat-filter"  style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Categories</option></select>
                 <select class="form-control" id="all-stat-filter" style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Statuses</option></select>
               </div>
@@ -126,6 +127,14 @@
                 </div>
 
                 <div class="form-group">
+                  <label class="form-label" for="issue-district">District *</label>
+                  <select id="issue-district" class="form-control">
+                    <option value="">Select a district…</option>
+                  </select>
+                  <span class="form-error hidden" id="dist-error"></span>
+                </div>
+
+                <div class="form-group">
                   <label class="form-label" for="issue-category">Category *</label>
                   <select id="issue-category" class="form-control">
                     <option value="">Select a category…</option>
@@ -152,6 +161,7 @@
                     <span id="pin-coords" style="font-size:.8rem;color:var(--text-muted);align-self:center;"></span>
                   </div>
                   <div id="report-map" style="height:240px;border-radius:10px;border:1.5px solid var(--border);"></div>
+                  <span class="form-hint" style="font-size:.78rem;color:var(--text-muted);">📌 Pin must be within Tripura state boundaries.</span>
                   <span class="form-error hidden" id="location-error"></span>
                 </div>
 
@@ -297,9 +307,11 @@
     }
 
     function renderAllGrid(issues) {
+      const distF = document.getElementById("all-dist-filter").value;
       const catF  = document.getElementById("all-cat-filter").value;
       const statF = document.getElementById("all-stat-filter").value;
       let list = issues;
+      if (distF) list = list.filter(i => i.district === distF);
       if (catF)  list = list.filter(i => i.category === catF);
       if (statF) list = list.filter(i => i.status   === statF);
       const el = document.getElementById("all-issues-grid");
@@ -324,8 +336,10 @@
     }
 
     // Populate filter selects
+    populateDistrictSelect(document.getElementById("all-dist-filter"), false);
     populateCategorySelect(document.getElementById("all-cat-filter"), false);
     populateStatusSelect(document.getElementById("all-stat-filter"), false);
+    document.getElementById("all-dist-filter").addEventListener("change", () => renderAllGrid(allIssues));
     document.getElementById("all-cat-filter").addEventListener("change",  () => renderAllGrid(allIssues));
     document.getElementById("all-stat-filter").addEventListener("change", () => renderAllGrid(allIssues));
 
@@ -418,6 +432,10 @@
     function initReportMap() {
       reportMap = initMap("report-map", DEFAULT_MAP_CENTER, 13);
       reportMap.on("click", (e) => {
+        if (!isInTripura(e.latlng.lat, e.latlng.lng)) {
+          showToast("Please pin a location within Tripura.", "warning");
+          return;
+        }
         pinLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
         if (reportPin) reportPin.remove();
         reportPin = L.marker([pinLocation.lat, pinLocation.lng], { draggable: true }).addTo(reportMap);
@@ -444,26 +462,29 @@
       updatePinCoords();
     });
 
-    // Populate category select in form
+    // Populate district and category selects in report form
+    populateDistrictSelect(document.getElementById("issue-district"), false);
     populateCategorySelect(document.getElementById("issue-category"), false);
 
     // ── Submit Issue ──
     document.getElementById("submit-issue-btn").addEventListener("click", async () => {
       // Clear errors
-      ["title-error","cat-error","addr-error","location-error"].forEach(id => {
+      ["title-error","dist-error","cat-error","addr-error","location-error"].forEach(id => {
         const el = document.getElementById(id); el.textContent = ""; el.classList.add("hidden");
       });
 
       const title    = document.getElementById("issue-title").value.trim();
+      const district = document.getElementById("issue-district").value;
       const category = document.getElementById("issue-category").value;
       const desc     = document.getElementById("issue-desc").value.trim();
       const address  = document.getElementById("issue-address").value.trim();
       let valid = true;
 
-      if (!title)    { showFieldErr("title-error",    "Title is required.");    valid = false; }
-      if (!category) { showFieldErr("cat-error",      "Select a category.");    valid = false; }
-      if (!address)  { showFieldErr("addr-error",     "Address is required.");  valid = false; }
-      if (!pinLocation) { showFieldErr("location-error", "Click the map to set a location."); valid = false; }
+      if (!title)    { showFieldErr("title-error",    "Title is required.");      valid = false; }
+      if (!district) { showFieldErr("dist-error",     "Select a district.");      valid = false; }
+      if (!category) { showFieldErr("cat-error",      "Select a category.");      valid = false; }
+      if (!address)  { showFieldErr("addr-error",     "Address is required.");    valid = false; }
+      if (!pinLocation) { showFieldErr("location-error", "Click the map to set a location within Tripura."); valid = false; }
       if (!valid) return;
 
       const btn = document.getElementById("submit-issue-btn");
@@ -472,6 +493,7 @@
       try {
         await createIssue({
           title,
+          district,
           category,
           description: desc,
           address,
@@ -484,6 +506,7 @@
         showToast("Issue reported successfully! 🎉", "success");
         // Reset form
         document.getElementById("issue-title").value    = "";
+        document.getElementById("issue-district").value = "";
         document.getElementById("issue-category").value = "";
         document.getElementById("issue-desc").value     = "";
         document.getElementById("issue-address").value  = "";
