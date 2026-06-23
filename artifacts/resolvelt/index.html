@@ -1,24 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>RESOLVELT</title>
-    <meta name="description" content="RESOLVELT — built on Replit. Update this description to reflect the app." />
-    <meta name="robots" content="index, follow" />
-    <meta property="og:title" content="RESOLVELT" />
-    <meta property="og:description" content="RESOLVELT — built on Replit. Update this description to reflect the app." />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="RESOLVELT" />
-    <meta name="twitter:description" content="RESOLVELT — built on Replit. Update this description to reflect the app." />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="RESOLVELT — Report community issues and track their resolution in your neighborhood.">
+  <title>RESOLVELT — Community Issue Reporting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="./index.html" class="navbar-brand">RESOLVE<span>LT</span></a>
+      <div class="navbar-links" id="nav-links">
+        <a href="./login.html">Log In</a>
+        <a href="./signup.html" class="btn-accent">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-content container">
+      <h1>Your Community.<br>Your Voice. Fixed.</h1>
+      <p>Report potholes, broken streetlights, graffiti, flooding, and more.<br>
+         Track progress and upvote issues that matter most to you.</p>
+      <div class="hero-cta">
+        <a href="./signup.html" class="btn btn-accent btn-lg">🚀 Report an Issue</a>
+        <a href="#map-section" class="btn btn-lg" style="background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.4);">🗺️ View Map</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat-item"><div class="number" id="stat-total">—</div><div class="label">Issues Reported</div></div>
+        <div class="hero-stat-item"><div class="number" id="stat-resolved">—</div><div class="label">Resolved</div></div>
+        <div class="hero-stat-item"><div class="number" id="stat-open">—</div><div class="label">Open</div></div>
+        <div class="hero-stat-item"><div class="number" id="stat-progress">—</div><div class="label">In Progress</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Main Content ── -->
+  <main>
+    <div class="container">
+
+      <!-- Map Section -->
+      <section class="page-section" id="map-section">
+        <div class="section-title">
+          <h2>📍 Live Issue Map</h2>
+          <div class="filters">
+            <button class="filter-btn active" data-map-filter="all">All</button>
+            <button class="filter-btn" data-map-filter="open">Open</button>
+            <button class="filter-btn" data-map-filter="in_progress">In Progress</button>
+            <button class="filter-btn" data-map-filter="resolved">Resolved</button>
+          </div>
+        </div>
+        <div id="map" style="height:400px;"></div>
+      </section>
+
+      <!-- Issues Feed -->
+      <section class="page-section">
+        <div class="section-title">
+          <h2>🗂️ Recent Reports</h2>
+          <div class="flex gap-1 items-center" style="flex-wrap:wrap;">
+            <select class="form-control" id="cat-filter" style="width:auto;font-size:0.85rem;padding:0.35rem 0.75rem;">
+              <option value="">All Categories</option>
+            </select>
+            <select class="form-control" id="stat-filter" style="width:auto;font-size:0.85rem;padding:0.35rem 0.75rem;">
+              <option value="">All Statuses</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-3" id="issues-grid">
+          <!-- Skeleton -->
+          <div class="issue-card" style="opacity:.4"><div style="height:180px;background:var(--surface-2)"></div><div class="issue-card-body"><div style="height:10px;background:var(--border);border-radius:4px;width:60%;margin-bottom:8px"></div><div style="height:14px;background:var(--border);border-radius:4px;width:80%"></div></div></div>
+          <div class="issue-card hide-mobile" style="opacity:.25"><div style="height:180px;background:var(--surface-2)"></div><div class="issue-card-body"><div style="height:10px;background:var(--border);border-radius:4px;width:55%;margin-bottom:8px"></div><div style="height:14px;background:var(--border);border-radius:4px;width:75%"></div></div></div>
+          <div class="issue-card hide-mobile" style="opacity:.1"><div style="height:180px;background:var(--surface-2)"></div><div class="issue-card-body"><div style="height:10px;background:var(--border);border-radius:4px;width:50%;margin-bottom:8px"></div><div style="height:14px;background:var(--border);border-radius:4px;width:70%"></div></div></div>
+        </div>
+      </section>
+
+      <!-- How It Works -->
+      <section class="page-section">
+        <h2 class="text-center mb-3">How RESOLVELT Works</h2>
+        <div class="grid-3">
+          <div class="card" style="text-align:center;"><div class="card-body"><div style="font-size:2.5rem;margin-bottom:.75rem">📸</div><h3>1. Spot &amp; Report</h3><p>See a problem? Snap a photo, describe it, drop a pin on the map. Takes 60 seconds.</p></div></div>
+          <div class="card" style="text-align:center;"><div class="card-body"><div style="font-size:2.5rem;margin-bottom:.75rem">👍</div><h3>2. Community Upvotes</h3><p>Neighbors upvote issues they care about most, helping prioritize what gets fixed first.</p></div></div>
+          <div class="card" style="text-align:center;"><div class="card-body"><div style="font-size:2.5rem;margin-bottom:.75rem">✅</div><h3>3. Track Resolution</h3><p>Watch reports move from Open → In Progress → Resolved. Real accountability, real results.</p></div></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>RESOLVE<span>LT</span> — Hyperlocal Community Issue Reporting &nbsp;·&nbsp; Built for your neighborhood</p>
+  </footer>
+
+  <div id="toast-container"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- App -->
+  <script src="./script.js"></script>
+
+  <script>
+    /* ── Index Page ── */
+    let allIssues = [];
+    let currentUser = null;
+    let mapFilter = "all";
+    let leafMap = null;
+    let mapMarkers = [];
+
+    initFirebase();
+
+    // Auth state → update navbar
+    onAuthStateChanged((user) => {
+      currentUser = user;
+      const nav = document.getElementById("nav-links");
+      if (user) {
+        nav.innerHTML = `<a href="./dashboard.html">Dashboard</a><button id="logout-btn" style="background:rgba(255,255,255,.12);color:#fff;border:none;padding:.4rem .75rem;border-radius:6px;cursor:pointer;font-size:.875rem;font-family:inherit;">Sign Out</button>`;
+        document.getElementById("logout-btn").onclick = () => signOut();
+      } else {
+        nav.innerHTML = `<a href="./login.html">Log In</a><a href="./signup.html" class="btn-accent">Sign Up</a>`;
+      }
+      if (allIssues.length) renderGrid(allIssues);
+    });
+
+    // Populate filter selects
+    populateCategorySelect(document.getElementById("cat-filter"), false);
+    populateStatusSelect(document.getElementById("stat-filter"), false);
+    document.getElementById("cat-filter").addEventListener("change", () => renderGrid(allIssues));
+    document.getElementById("stat-filter").addEventListener("change", () => renderGrid(allIssues));
+
+    // Map filter buttons
+    document.querySelectorAll("[data-map-filter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-map-filter]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        mapFilter = btn.dataset.mapFilter;
+        renderMapMarkers();
+      });
+    });
+
+    // Init map
+    leafMap = initMap("map");
+
+    function renderMapMarkers() {
+      // Remove old markers
+      mapMarkers.forEach(m => m.remove());
+      mapMarkers = [];
+      const filtered = mapFilter === "all" ? allIssues : allIssues.filter(i => i.status === mapFilter);
+      filtered.forEach(issue => {
+        if (!issue.location || !issue.location.lat) return;
+        const icon = createMarkerIcon(issue.category, issue.status);
+        const m = L.marker([issue.location.lat, issue.location.lng], { icon }).addTo(leafMap);
+        const catLabel = getCategoryLabel(issue.category);
+        m.bindPopup(`
+          <div style="min-width:180px;font-family:Inter,sans-serif;">
+            <strong style="font-size:.9rem">${escHtml(issue.title)}</strong>
+            <div style="margin:4px 0;font-size:.75rem;color:#6b7280">${catLabel} · ${getStatusLabel(issue.status)}</div>
+            <div style="font-size:.78rem;color:#374151">${escHtml((issue.description||'').substring(0,90))}${(issue.description||'').length>90?'…':''}</div>
+            ${issue.photoURL?`<img src="${issue.photoURL}" style="width:100%;border-radius:6px;margin-top:6px;max-height:90px;object-fit:cover">`:''}
+            <div style="margin-top:6px;font-size:.75rem;color:#9ca3af">👍 ${issue.upvotes||0} upvotes</div>
+          </div>
+        `);
+        mapMarkers.push(m);
+      });
+    }
+
+    function renderGrid(issues) {
+      const grid = document.getElementById("issues-grid");
+      const catF  = document.getElementById("cat-filter").value;
+      const statF = document.getElementById("stat-filter").value;
+      let list = issues;
+      if (catF)  list = list.filter(i => i.category === catF);
+      if (statF) list = list.filter(i => i.status   === statF);
+      if (!list.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><h3>No issues found</h3><p>Try adjusting your filters or be the first to report one!</p><a href="./signup.html" class="btn btn-primary mt-2">Report an Issue</a></div>`;
+        return;
+      }
+      grid.innerHTML = list.map(i => renderIssueCard(i, currentUser?.uid)).join("");
+      grid.querySelectorAll(".upvote-btn").forEach(btn => {
+        btn.addEventListener("click", () => handleUpvote(btn.dataset.issueId, btn));
+      });
+      // Mark voted issues
+      if (currentUser) {
+        list.forEach(async issue => {
+          const voted = await hasUpvoted(issue.id, currentUser.uid);
+          const btn = grid.querySelector(`.upvote-btn[data-issue-id="${issue.id}"]`);
+          if (btn && voted) btn.classList.add("voted");
+        });
+      }
+    }
+
+    async function handleUpvote(issueId, btn) {
+      if (!currentUser) { showToast("Sign in to upvote.", "warning"); setTimeout(()=>location.href="./login.html",1500); return; }
+      btn.disabled = true;
+      try {
+        const voted = await toggleUpvote(issueId, currentUser.uid);
+        btn.classList.toggle("voted", voted);
+        const issue = allIssues.find(i => i.id === issueId);
+        if (issue) { issue.upvotes = (issue.upvotes||0)+(voted?1:-1); btn.querySelector(".vote-count").textContent = issue.upvotes; }
+      } catch(e) { showToast("Could not record vote.", "error"); }
+      btn.disabled = false;
+    }
+
+    function animateCounter(id, target) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const dur = 800, start = performance.now();
+      const step = now => { const t = Math.min((now-start)/dur,1); el.textContent = Math.round(t*target); if(t<1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }
+
+    async function bootstrap() {
+      try {
+        const [stats, issues] = await Promise.all([getDashboardStats(), getIssues()]);
+        animateCounter("stat-total",    stats.total);
+        animateCounter("stat-resolved", stats.resolved);
+        animateCounter("stat-open",     stats.open);
+        animateCounter("stat-progress", stats.in_progress);
+        allIssues = issues;
+        renderGrid(allIssues);
+        renderMapMarkers();
+      } catch(e) {
+        document.getElementById("issues-grid").innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><h3>Could not load issues</h3><p>Check your internet connection and try again.</p></div>`;
+      }
+    }
+
+    bootstrap();
+  </script>
+</body>
 </html>

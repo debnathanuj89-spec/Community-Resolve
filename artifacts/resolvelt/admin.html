@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — RESOLVELT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="./index.html" class="navbar-brand">RESOLVE<span>LT</span> <span style="font-size:.75rem;background:var(--accent);border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:middle;">ADMIN</span></a>
+      <div class="navbar-links">
+        <a href="./dashboard.html" style="color:rgba(255,255,255,.8);">← Dashboard</a>
+        <button id="logout-btn" style="background:rgba(255,255,255,.12);color:#fff;border:none;padding:.4rem .75rem;border-radius:6px;cursor:pointer;font-size:.875rem;font-family:inherit;">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Admin Layout ── -->
+  <main>
+    <div class="container">
+      <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <div style="text-align:center;padding:1rem 0;border-bottom:1px solid var(--border);margin-bottom:1rem;">
+            <div style="font-size:2.5rem;">🛡️</div>
+            <div style="font-weight:800;font-size:1rem;margin-top:.5rem;">Admin Panel</div>
+            <div id="admin-email" style="font-size:.78rem;color:var(--text-muted);margin-top:.2rem;"></div>
+          </div>
+          <nav class="sidebar-nav">
+            <a href="#" class="active" data-tab="overview"><span class="icon">📊</span> Overview</a>
+            <a href="#" data-tab="all-issues"><span class="icon">📋</span> Manage Issues</a>
+            <a href="#" data-tab="map"><span class="icon">🗺️</span> Map View</a>
+          </nav>
+        </aside>
+
+        <!-- Content -->
+        <div id="admin-content">
+
+          <!-- ── Overview Tab ── -->
+          <div id="tab-overview" class="tab-content">
+            <h2 style="margin-bottom:1.25rem;">Community Dashboard</h2>
+
+            <!-- Stats -->
+            <div class="grid-3 mb-3">
+              <div class="stat-card" style="border-left:4px solid var(--primary);">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number" id="ov-total">—</div>
+                <div class="stat-label">Total Issues</div>
+              </div>
+              <div class="stat-card" style="border-left:4px solid var(--danger);">
+                <div class="stat-icon">🔴</div>
+                <div class="stat-number" id="ov-open">—</div>
+                <div class="stat-label">Open</div>
+              </div>
+              <div class="stat-card" style="border-left:4px solid var(--warning);">
+                <div class="stat-icon">🟡</div>
+                <div class="stat-number" id="ov-progress">—</div>
+                <div class="stat-label">In Progress</div>
+              </div>
+            </div>
+            <div class="grid-2 mb-3">
+              <div class="stat-card" style="border-left:4px solid var(--success);">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number" id="ov-resolved">—</div>
+                <div class="stat-label">Resolved</div>
+              </div>
+              <div class="stat-card" style="border-left:4px solid var(--text-muted);">
+                <div class="stat-icon">🔒</div>
+                <div class="stat-number" id="ov-closed">—</div>
+                <div class="stat-label">Closed</div>
+              </div>
+            </div>
+
+            <!-- Resolution Rate -->
+            <div class="card mb-3">
+              <div class="card-header"><h4>Resolution Rate</h4></div>
+              <div class="card-body">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                  <div style="flex:1;">
+                    <div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem;">
+                      <span>Progress</span><span id="resolution-pct">0%</span>
+                    </div>
+                    <div class="progress-bar" style="height:10px;">
+                      <div class="progress-fill" id="resolution-bar" style="width:0%;background:var(--success);"></div>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:1.5rem;margin-top:1rem;flex-wrap:wrap;">
+                  <div style="font-size:.82rem;"><span style="color:var(--danger);">●</span> Open</div>
+                  <div style="font-size:.82rem;"><span style="color:var(--warning);">●</span> In Progress</div>
+                  <div style="font-size:.82rem;"><span style="color:var(--success);">●</span> Resolved</div>
+                  <div style="font-size:.82rem;"><span style="color:var(--text-muted);">●</span> Closed</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category breakdown -->
+            <div class="card">
+              <div class="card-header"><h4>Issues by Category</h4></div>
+              <div class="card-body" id="category-breakdown">
+                <div class="empty-state"><div class="spinner spinner-dark"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Manage Issues Tab ── -->
+          <div id="tab-all-issues" class="tab-content hidden">
+            <div class="section-title" style="flex-wrap:wrap;gap:.75rem;">
+              <h2>Manage Issues</h2>
+              <div class="flex gap-1 items-center" style="flex-wrap:wrap;">
+                <div class="search-box">
+                  <span class="search-icon">🔍</span>
+                  <input type="search" id="search-input" class="form-control" placeholder="Search issues…" style="padding-left:2.25rem;width:180px;">
+                </div>
+                <select class="form-control" id="manage-cat-filter"  style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Categories</option></select>
+                <select class="form-control" id="manage-stat-filter" style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Statuses</option></select>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Photo</th>
+                    <th>Issue</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Upvotes</th>
+                    <th>Reported</th>
+                    <th>Update Status</th>
+                  </tr>
+                </thead>
+                <tbody id="issues-table-body">
+                  <tr><td colspan="7" style="text-align:center;padding:2rem;"><div class="spinner spinner-dark" style="margin:0 auto;"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ── Map Tab ── -->
+          <div id="tab-map" class="tab-content hidden">
+            <div class="section-title mb-2">
+              <h2>All Issues Map</h2>
+              <div class="filters">
+                <button class="filter-btn active" data-map-filter="all">All</button>
+                <button class="filter-btn" data-map-filter="open">Open</button>
+                <button class="filter-btn" data-map-filter="in_progress">In Progress</button>
+                <button class="filter-btn" data-map-filter="resolved">Resolved</button>
+              </div>
+            </div>
+            <div id="admin-map" style="height:520px;border-radius:12px;"></div>
+          </div>
+
+        </div><!-- /admin-content -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Issue Edit Modal -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal" style="max-width:540px;">
+      <div class="modal-header">
+        <h3>Update Issue Status</h3>
+        <button class="modal-close" data-close-modal>×</button>
+      </div>
+      <div class="modal-body">
+        <div id="edit-issue-info" style="margin-bottom:.5rem;"></div>
+        <div class="form-group">
+          <label class="form-label" for="edit-status">New Status</label>
+          <select id="edit-status" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-note">Admin Note <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+          <textarea id="edit-note" class="form-control" rows="3" placeholder="Add a note about the status change, e.g. 'Crew scheduled for Thursday'"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-close-modal>Cancel</button>
+        <button class="btn btn-primary" id="save-status-btn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./script.js"></script>
+
+  <script>
+    /* ── Admin Page Logic ── */
+    initFirebase();
+
+    let currentUser = null;
+    let allIssues   = [];
+    let adminMap    = null;
+    let adminMarkers = [];
+    let editingIssueId = null;
+
+    // ── Auth guard — admin only ──
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) { location.href = "./login.html"; return; }
+      const admin = await isAdmin(user);
+      if (!admin) {
+        showToast("Access denied. Admin privileges required.", "error");
+        setTimeout(() => location.href = "./dashboard.html", 2000);
+        return;
+      }
+      currentUser = user;
+      document.getElementById("admin-email").textContent = user.email || "";
+      await loadIssues();
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", () => signOut());
+
+    // ── Tab navigation ──
+    document.querySelectorAll(".sidebar-nav a[data-tab]").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        document.querySelectorAll(".sidebar-nav a[data-tab]").forEach(a => a.classList.remove("active"));
+        link.classList.add("active");
+        document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+        document.getElementById(`tab-${link.dataset.tab}`).classList.remove("hidden");
+        if (link.dataset.tab === "map" && !adminMap) initAdminMap();
+      });
+    });
+
+    // ── Load all issues ──
+    async function loadIssues() {
+      try {
+        allIssues = await getIssues();
+        renderStats();
+        renderCategoryBreakdown();
+        renderTable(allIssues);
+        if (adminMap) renderAdminMapMarkers();
+      } catch(e) {
+        showToast("Failed to load issues: " + e.message, "error");
+      }
+    }
+
+    // ── Stats ──
+    function renderStats() {
+      const counts = { total: 0, open: 0, in_progress: 0, resolved: 0, closed: 0 };
+      allIssues.forEach(i => {
+        counts.total++;
+        if (counts[i.status] !== undefined) counts[i.status]++;
+      });
+      document.getElementById("ov-total").textContent    = counts.total;
+      document.getElementById("ov-open").textContent     = counts.open;
+      document.getElementById("ov-progress").textContent = counts.in_progress;
+      document.getElementById("ov-resolved").textContent = counts.resolved;
+      document.getElementById("ov-closed").textContent   = counts.closed;
+
+      const pct = counts.total ? Math.round(((counts.resolved + counts.closed) / counts.total) * 100) : 0;
+      document.getElementById("resolution-pct").textContent = pct + "%";
+      document.getElementById("resolution-bar").style.width = pct + "%";
+    }
+
+    // ── Category breakdown ──
+    function renderCategoryBreakdown() {
+      const counts = {};
+      allIssues.forEach(i => { counts[i.category] = (counts[i.category] || 0) + 1; });
+      const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+      const max    = sorted[0]?.[1] || 1;
+      const el     = document.getElementById("category-breakdown");
+      if (!sorted.length) { el.innerHTML = `<p class="text-muted">No issues yet.</p>`; return; }
+      el.innerHTML = sorted.map(([cat, count]) => {
+        const pct  = Math.round((count / max) * 100);
+        const info = ISSUE_CATEGORIES.find(c => c.value === cat);
+        const label = info ? info.label : cat;
+        return `
+          <div style="margin-bottom:.85rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.83rem;margin-bottom:.3rem;">
+              <span>${escHtml(label)}</span>
+              <span style="color:var(--text-muted);font-weight:600;">${count}</span>
+            </div>
+            <div class="progress-bar" style="height:8px;">
+              <div class="progress-fill" style="width:${pct}%;background:var(--primary);"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // ── Issues Table ──
+    function renderTable(issues) {
+      const search = (document.getElementById("search-input")?.value || "").toLowerCase();
+      const catF   = document.getElementById("manage-cat-filter")?.value  || "";
+      const statF  = document.getElementById("manage-stat-filter")?.value || "";
+
+      let list = issues;
+      if (catF)   list = list.filter(i => i.category === catF);
+      if (statF)  list = list.filter(i => i.status   === statF);
+      if (search) list = list.filter(i =>
+        (i.title||"").toLowerCase().includes(search) ||
+        (i.address||"").toLowerCase().includes(search) ||
+        (i.description||"").toLowerCase().includes(search)
+      );
+
+      const tbody = document.getElementById("issues-table-body");
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--text-muted);">No issues match your filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(issue => {
+        const date = issue.createdAt
+          ? formatDate(issue.createdAt.toDate ? issue.createdAt.toDate() : new Date(issue.createdAt))
+          : "—";
+        const statusOptions = ISSUE_STATUSES.map(s =>
+          `<option value="${s.value}" ${s.value === issue.status ? "selected" : ""}>${s.label}</option>`
+        ).join("");
+
+        return `
+          <tr data-issue-id="${issue.id}">
+            <td>
+              ${issue.photoURL
+                ? `<img src="${issue.photoURL}" class="table-thumb" alt="">`
+                : `<div class="table-thumb" style="display:flex;align-items:center;justify-content:center;background:var(--surface-2);font-size:1.2rem;">${getCategoryEmoji(issue.category)}</div>`
+              }
+            </td>
+            <td style="max-width:220px;">
+              <div style="font-weight:700;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(issue.title)}</div>
+              <div style="font-size:.77rem;color:var(--text-muted);margin-top:.2rem;">📍 ${escHtml((issue.address||"").substring(0,40))}</div>
+              <div style="font-size:.77rem;color:var(--text-muted);">👤 ${escHtml(issue.reporterName||issue.reporterEmail||"Anonymous")}</div>
+            </td>
+            <td>${renderCategoryBadge(issue.category)}</td>
+            <td>${renderStatusBadge(issue.status)}</td>
+            <td style="text-align:center;font-weight:700;">👍 ${issue.upvotes||0}</td>
+            <td style="white-space:nowrap;font-size:.8rem;color:var(--text-muted);">${date}</td>
+            <td>
+              <div style="display:flex;gap:.4rem;align-items:center;">
+                <select class="form-control inline-status-select" data-issue-id="${issue.id}" style="font-size:.8rem;padding:.3rem .5rem;width:auto;min-width:130px;">
+                  ${statusOptions}
+                </select>
+                <button class="btn btn-primary btn-sm save-status-btn" data-issue-id="${issue.id}" data-title="${escHtml(issue.title)}">Save</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // Bind inline save buttons
+      tbody.querySelectorAll(".save-status-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id     = btn.dataset.issueId;
+          const row    = tbody.querySelector(`tr[data-issue-id="${id}"]`);
+          const select = row.querySelector(".inline-status-select");
+          const newStatus = select.value;
+          btn.disabled = true; btn.textContent = "…";
+          try {
+            await updateIssueStatus(id, newStatus);
+            // Update local cache
+            const issue = allIssues.find(i => i.id === id);
+            if (issue) issue.status = newStatus;
+            showToast(`Status updated to "${getStatusLabel(newStatus)}"`, "success");
+            renderTable(allIssues);
+            renderStats();
+            renderCategoryBreakdown();
+          } catch(e) {
+            showToast("Failed to update: " + e.message, "error");
+            btn.disabled = false; btn.textContent = "Save";
+          }
+        });
+      });
+    }
+
+    // Filters
+    populateCategorySelect(document.getElementById("manage-cat-filter"), false);
+    populateStatusSelect(document.getElementById("manage-stat-filter"), false);
+    document.getElementById("manage-cat-filter").addEventListener("change",  () => renderTable(allIssues));
+    document.getElementById("manage-stat-filter").addEventListener("change", () => renderTable(allIssues));
+    document.getElementById("search-input").addEventListener("input",        () => renderTable(allIssues));
+
+    // ── Admin Map ──
+    function initAdminMap() {
+      adminMap = initMap("admin-map");
+      renderAdminMapMarkers("all");
+      document.querySelectorAll("[data-map-filter]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("[data-map-filter]").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          renderAdminMapMarkers(btn.dataset.mapFilter);
+        });
+      });
+    }
+
+    function renderAdminMapMarkers(statusFilter = "all") {
+      adminMarkers.forEach(m => m.remove()); adminMarkers = [];
+      const list = statusFilter === "all" ? allIssues : allIssues.filter(i => i.status === statusFilter);
+      list.forEach(issue => {
+        if (!issue.location || !issue.location.lat) return;
+        const icon = createMarkerIcon(issue.category, issue.status);
+        const m = L.marker([issue.location.lat, issue.location.lng], { icon })
+          .addTo(adminMap)
+          .bindPopup(`
+            <div style="min-width:180px;font-family:Inter,sans-serif;">
+              <strong style="font-size:.9rem">${escHtml(issue.title)}</strong>
+              <div style="margin:4px 0;font-size:.75rem;color:#6b7280">${getCategoryLabel(issue.category)} · ${getStatusLabel(issue.status)}</div>
+              <div style="font-size:.78rem;color:#374151">👍 ${issue.upvotes||0} upvotes</div>
+              <button onclick="document.querySelector('.sidebar-nav a[data-tab=all-issues]').click()" 
+                style="margin-top:6px;font-size:.75rem;background:var(--primary);color:#fff;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                Manage →
+              </button>
+            </div>
+          `);
+        adminMarkers.push(m);
+      });
+    }
+
+    // Populate edit modal status select
+    populateStatusSelect(document.getElementById("edit-status"), false);
+    bindModalClose("edit-modal");
+
+    document.getElementById("save-status-btn").addEventListener("click", async () => {
+      if (!editingIssueId) return;
+      const newStatus = document.getElementById("edit-status").value;
+      const btn = document.getElementById("save-status-btn");
+      btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Saving…`;
+      try {
+        await updateIssueStatus(editingIssueId, newStatus);
+        const issue = allIssues.find(i => i.id === editingIssueId);
+        if (issue) issue.status = newStatus;
+        showToast(`Status updated to "${getStatusLabel(newStatus)}"`, "success");
+        closeModal("edit-modal");
+        renderTable(allIssues);
+        renderStats();
+      } catch(e) {
+        showToast("Failed to update: " + e.message, "error");
+      }
+      btn.disabled = false; btn.textContent = "Save Changes";
+    });
+  </script>
+</body>
+</html>

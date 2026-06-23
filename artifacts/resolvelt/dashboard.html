@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — RESOLVELT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="./index.html" class="navbar-brand">RESOLVE<span>LT</span></a>
+      <div class="navbar-links">
+        <span id="nav-user-name" style="color:rgba(255,255,255,.7);font-size:.875rem;"></span>
+        <a href="./index.html">Home</a>
+        <button id="logout-btn" style="background:rgba(255,255,255,.12);color:#fff;border:none;padding:.4rem .75rem;border-radius:6px;cursor:pointer;font-size:.875rem;font-family:inherit;">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Main Dashboard ── -->
+  <main>
+    <div class="container">
+      <div class="dashboard-layout">
+
+        <!-- ── Sidebar ── -->
+        <aside class="sidebar">
+          <div class="sidebar-user">
+            <div class="sidebar-avatar" id="user-avatar">?</div>
+            <div>
+              <div class="sidebar-user-name" id="sidebar-name">Loading…</div>
+              <div class="sidebar-user-email" id="sidebar-email"></div>
+            </div>
+          </div>
+          <nav class="sidebar-nav">
+            <a href="#overview" class="active" data-tab="overview"><span class="icon">📊</span> Overview</a>
+            <a href="#my-reports"  data-tab="my-reports"><span class="icon">📋</span> My Reports</a>
+            <a href="#all-issues"  data-tab="all-issues"><span class="icon">🗂️</span> All Issues</a>
+            <a href="#map-view"    data-tab="map-view"><span class="icon">🗺️</span> Map View</a>
+            <a href="#report-new"  data-tab="report-new" id="sidebar-report-btn" style="color:var(--accent);font-weight:700;"><span class="icon">➕</span> Report Issue</a>
+          </nav>
+          <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+            <a href="./admin.html" id="admin-link" class="hidden" style="display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:8px;color:var(--primary);font-size:.875rem;font-weight:600;background:rgba(13,79,140,.06);">
+              <span>🛡️</span> Admin Panel
+            </a>
+          </div>
+        </aside>
+
+        <!-- ── Content Area ── -->
+        <div id="content-area">
+
+          <!-- ── Overview Tab ── -->
+          <div id="tab-overview" class="tab-content">
+            <h2 style="margin-bottom:1rem;">Welcome back, <span id="welcome-name">Resident</span> 👋</h2>
+            <!-- Stats Row -->
+            <div class="grid-3 mb-3">
+              <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-number" id="ov-total">—</div><div class="stat-label">Total Issues</div></div>
+              <div class="stat-card"><div class="stat-icon">🔴</div><div class="stat-number" id="ov-open">—</div><div class="stat-label">Open</div></div>
+              <div class="stat-card"><div class="stat-icon">🟡</div><div class="stat-number" id="ov-progress">—</div><div class="stat-label">In Progress</div></div>
+            </div>
+            <div class="grid-2 mb-3">
+              <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-number" id="ov-resolved">—</div><div class="stat-label">Resolved</div></div>
+              <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-number" id="ov-mine">—</div><div class="stat-label">My Reports</div></div>
+            </div>
+            <!-- Recent community issues -->
+            <div class="section-title"><h3>Recent Community Issues</h3></div>
+            <div class="grid-3" id="recent-issues-grid">
+              <div class="empty-state" style="grid-column:1/-1"><div class="spinner spinner-dark"></div></div>
+            </div>
+          </div>
+
+          <!-- ── My Reports Tab ── -->
+          <div id="tab-my-reports" class="tab-content hidden">
+            <div class="section-title">
+              <h2>My Reports</h2>
+              <button class="btn btn-accent" id="new-report-btn-myreports">+ New Report</button>
+            </div>
+            <div class="grid-3" id="my-reports-grid">
+              <div class="empty-state" style="grid-column:1/-1"><div class="spinner spinner-dark"></div></div>
+            </div>
+          </div>
+
+          <!-- ── All Issues Tab ── -->
+          <div id="tab-all-issues" class="tab-content hidden">
+            <div class="section-title" style="flex-wrap:wrap;gap:.75rem;">
+              <h2>All Community Issues</h2>
+              <div class="flex gap-1 items-center" style="flex-wrap:wrap;">
+                <select class="form-control" id="all-cat-filter"  style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Categories</option></select>
+                <select class="form-control" id="all-stat-filter" style="width:auto;font-size:.85rem;padding:.35rem .75rem;"><option value="">All Statuses</option></select>
+              </div>
+            </div>
+            <div class="grid-3" id="all-issues-grid">
+              <div class="empty-state" style="grid-column:1/-1"><div class="spinner spinner-dark"></div></div>
+            </div>
+          </div>
+
+          <!-- ── Map View Tab ── -->
+          <div id="tab-map-view" class="tab-content hidden">
+            <div class="section-title mb-2">
+              <h2>Issue Map</h2>
+              <div class="filters">
+                <button class="filter-btn active" data-map-status="all">All</button>
+                <button class="filter-btn" data-map-status="open">Open</button>
+                <button class="filter-btn" data-map-status="in_progress">In Progress</button>
+                <button class="filter-btn" data-map-status="resolved">Resolved</button>
+              </div>
+            </div>
+            <div id="dash-map" style="height:480px;border-radius:12px;"></div>
+          </div>
+
+          <!-- ── Report New Issue Tab ── -->
+          <div id="tab-report-new" class="tab-content hidden">
+            <h2 style="margin-bottom:1.5rem;">📸 Report a New Issue</h2>
+            <div class="card" style="max-width:600px;">
+              <div class="card-body" style="display:flex;flex-direction:column;gap:1rem;">
+
+                <div class="form-group">
+                  <label class="form-label" for="issue-title">Issue Title *</label>
+                  <input type="text" id="issue-title" class="form-control" placeholder="e.g. Large pothole on Main St near Oak Ave" maxlength="120">
+                  <span class="form-error hidden" id="title-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="issue-category">Category *</label>
+                  <select id="issue-category" class="form-control">
+                    <option value="">Select a category…</option>
+                  </select>
+                  <span class="form-error hidden" id="cat-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="issue-desc">Description</label>
+                  <textarea id="issue-desc" class="form-control" placeholder="Describe the issue in detail — severity, size, how long it's been there, etc." rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="issue-address">Address / Location *</label>
+                  <input type="text" id="issue-address" class="form-control" placeholder="e.g. 123 Main Street, corner of Oak Ave">
+                  <span class="form-error hidden" id="addr-error"></span>
+                </div>
+
+                <!-- Map pin picker -->
+                <div class="form-group">
+                  <label class="form-label">Pin on Map <span style="color:var(--text-muted);font-weight:400;">(click to set location)</span></label>
+                  <div style="display:flex;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-ghost btn-sm" id="locate-me-btn">📍 Use My Location</button>
+                    <span id="pin-coords" style="font-size:.8rem;color:var(--text-muted);align-self:center;"></span>
+                  </div>
+                  <div id="report-map" style="height:240px;border-radius:10px;border:1.5px solid var(--border);"></div>
+                  <span class="form-error hidden" id="location-error"></span>
+                </div>
+
+                <!-- Photo Upload -->
+                <div class="form-group">
+                  <label class="form-label">Photo <span style="color:var(--text-muted);font-weight:400;">(optional, max 5MB)</span></label>
+                  <div class="upload-area" id="upload-area" onclick="document.getElementById('photo-input').click()">
+                    <div>📷 Click or drag &amp; drop a photo here</div>
+                    <input type="file" id="photo-input" accept="image/*" capture="environment">
+                    <img id="upload-preview" class="upload-preview" alt="Preview">
+                  </div>
+                  <!-- Upload progress -->
+                  <div id="upload-progress-wrap" class="hidden mt-1">
+                    <div class="progress-bar"><div class="progress-fill" id="upload-progress-fill" style="width:0%"></div></div>
+                    <span id="upload-progress-text" style="font-size:.78rem;color:var(--text-muted);">Uploading…</span>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+                  <button class="btn btn-primary btn-lg" id="submit-issue-btn">🚀 Submit Report</button>
+                  <button class="btn btn-ghost" id="cancel-report-btn">Cancel</button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /content-area -->
+      </div><!-- /dashboard-layout -->
+    </div>
+  </main>
+
+  <!-- Issue Detail Modal -->
+  <div class="modal-overlay" id="issue-detail-modal">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <h3 id="detail-title">Issue Detail</h3>
+        <button class="modal-close" data-close-modal>×</button>
+      </div>
+      <div class="modal-body" id="detail-body">Loading…</div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-close-modal>Close</button></div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./script.js"></script>
+
+  <script>
+    /* ── Dashboard Logic ── */
+    initFirebase();
+
+    let currentUser  = null;
+    let allIssues    = [];
+    let myIssues     = [];
+    let reportMap    = null;
+    let dashMap      = null;
+    let reportPin    = null;    // Leaflet marker for report location
+    let pinLocation  = null;    // { lat, lng }
+    let dashMarkers  = [];
+
+    // ── Auth guard ──
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) { location.href = "./login.html"; return; }
+      currentUser = user;
+      document.getElementById("nav-user-name").textContent  = user.displayName || user.email;
+      document.getElementById("sidebar-name").textContent   = user.displayName || "Resident";
+      document.getElementById("sidebar-email").textContent  = user.email || "";
+      document.getElementById("welcome-name").textContent   = (user.displayName || "Resident").split(" ")[0];
+      const av = document.getElementById("user-avatar");
+      av.textContent = (user.displayName || user.email || "?")[0].toUpperCase();
+
+      // Show admin link if admin
+      const admin = await isAdmin(user);
+      if (admin) document.getElementById("admin-link").classList.remove("hidden");
+
+      // Load data
+      await Promise.all([loadStats(), loadAllIssues(), loadMyIssues()]);
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", () => signOut());
+
+    // ── Tab navigation ──
+    document.querySelectorAll(".sidebar-nav a[data-tab]").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        switchTab(link.dataset.tab);
+      });
+    });
+
+    function switchTab(name) {
+      // Nav active state
+      document.querySelectorAll(".sidebar-nav a[data-tab]").forEach(a => a.classList.remove("active"));
+      const navLink = document.querySelector(`.sidebar-nav a[data-tab="${name}"]`);
+      if (navLink) navLink.classList.add("active");
+      // Show/hide content
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+      const tab = document.getElementById(`tab-${name}`);
+      if (tab) tab.classList.remove("hidden");
+      // Lazy-init maps when their tab becomes visible
+      if (name === "map-view" && !dashMap) initDashMap();
+      if (name === "report-new" && !reportMap) initReportMap();
+    }
+
+    // ── New Report button (sidebar + my-reports tab) ──
+    document.getElementById("sidebar-report-btn").addEventListener("click", e => {
+      e.preventDefault(); switchTab("report-new");
+    });
+    document.getElementById("new-report-btn-myreports").addEventListener("click", () => switchTab("report-new"));
+    document.getElementById("cancel-report-btn").addEventListener("click", () => switchTab("overview"));
+
+    // ── Stats ──
+    async function loadStats() {
+      try {
+        const stats = await getDashboardStats();
+        document.getElementById("ov-total").textContent    = stats.total;
+        document.getElementById("ov-open").textContent     = stats.open;
+        document.getElementById("ov-progress").textContent = stats.in_progress;
+        document.getElementById("ov-resolved").textContent = stats.resolved;
+      } catch(e) {}
+    }
+
+    // ── All Issues ──
+    async function loadAllIssues() {
+      try {
+        allIssues = await getIssues();
+        renderRecent(allIssues.slice(0, 6));
+        renderAllGrid(allIssues);
+        if (dashMap) renderDashMapMarkers();
+      } catch(e) {
+        document.getElementById("all-issues-grid").innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><h3>Could not load issues</h3></div>`;
+      }
+    }
+
+    // ── My Issues ──
+    async function loadMyIssues() {
+      if (!currentUser) return;
+      try {
+        myIssues = await getUserIssues(currentUser.uid);
+        document.getElementById("ov-mine").textContent = myIssues.length;
+        renderMyGrid(myIssues);
+      } catch(e) {}
+    }
+
+    function renderRecent(issues) {
+      const el = document.getElementById("recent-issues-grid");
+      if (!issues.length) {
+        el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><h3>No issues yet</h3><p>Be the first to report a community issue!</p></div>`;
+        return;
+      }
+      el.innerHTML = issues.map(i => renderIssueCard(i, currentUser?.uid)).join("");
+      bindVoteButtons(el);
+      bindCardClicks(el);
+    }
+
+    function renderAllGrid(issues) {
+      const catF  = document.getElementById("all-cat-filter").value;
+      const statF = document.getElementById("all-stat-filter").value;
+      let list = issues;
+      if (catF)  list = list.filter(i => i.category === catF);
+      if (statF) list = list.filter(i => i.status   === statF);
+      const el = document.getElementById("all-issues-grid");
+      if (!list.length) {
+        el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><h3>No issues found</h3></div>`;
+        return;
+      }
+      el.innerHTML = list.map(i => renderIssueCard(i, currentUser?.uid)).join("");
+      bindVoteButtons(el);
+      bindCardClicks(el);
+    }
+
+    function renderMyGrid(issues) {
+      const el = document.getElementById("my-reports-grid");
+      if (!issues.length) {
+        el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📝</div><h3>No reports yet</h3><p>You haven't reported any issues yet.</p><button class="btn btn-accent mt-2" onclick="switchTab('report-new')">Report Your First Issue</button></div>`;
+        return;
+      }
+      el.innerHTML = issues.map(i => renderIssueCard(i, currentUser?.uid)).join("");
+      bindVoteButtons(el);
+      bindCardClicks(el);
+    }
+
+    // Populate filter selects
+    populateCategorySelect(document.getElementById("all-cat-filter"), false);
+    populateStatusSelect(document.getElementById("all-stat-filter"), false);
+    document.getElementById("all-cat-filter").addEventListener("change",  () => renderAllGrid(allIssues));
+    document.getElementById("all-stat-filter").addEventListener("change", () => renderAllGrid(allIssues));
+
+    function bindVoteButtons(container) {
+      container.querySelectorAll(".upvote-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!currentUser) { showToast("Sign in to vote.", "warning"); return; }
+          btn.disabled = true;
+          try {
+            const voted = await toggleUpvote(btn.dataset.issueId, currentUser.uid);
+            btn.classList.toggle("voted", voted);
+            const issue = allIssues.find(i => i.id === btn.dataset.issueId) || myIssues.find(i => i.id === btn.dataset.issueId);
+            if (issue) { issue.upvotes = (issue.upvotes||0)+(voted?1:-1); btn.querySelector(".vote-count").textContent = issue.upvotes; }
+          } catch(e) { showToast("Could not record vote.", "error"); }
+          btn.disabled = false;
+        });
+        // Mark voted
+        if (currentUser) {
+          hasUpvoted(btn.dataset.issueId, currentUser.uid).then(v => { if (v) btn.classList.add("voted"); });
+        }
+      });
+    }
+
+    function bindCardClicks(container) {
+      container.querySelectorAll(".issue-card").forEach(card => {
+        card.addEventListener("click", (e) => {
+          if (e.target.closest(".upvote-btn")) return;
+          const id = card.dataset.id;
+          if (id) openIssueDetail(id);
+        });
+      });
+    }
+
+    // ── Issue Detail Modal ──
+    async function openIssueDetail(id) {
+      openModal("issue-detail-modal");
+      document.getElementById("detail-body").innerHTML = `<div class="empty-state"><div class="spinner spinner-dark"></div></div>`;
+      try {
+        const issue = await getIssue(id);
+        if (!issue) { document.getElementById("detail-body").innerHTML = "<p>Issue not found.</p>"; return; }
+        const catLabel  = getCategoryLabel(issue.category);
+        const date      = issue.createdAt ? formatDate(issue.createdAt.toDate ? issue.createdAt.toDate() : new Date(issue.createdAt)) : "";
+        document.getElementById("detail-title").textContent = issue.title;
+        document.getElementById("detail-body").innerHTML = `
+          ${issue.photoURL ? `<img src="${issue.photoURL}" style="width:100%;max-height:260px;object-fit:cover;border-radius:10px;">` : ""}
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;">
+            ${renderCategoryBadge(issue.category)}
+            ${renderStatusBadge(issue.status)}
+          </div>
+          <p style="margin-top:.75rem;">${escHtml(issue.description || "No description provided.")}</p>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-top:.5rem;">📍 ${escHtml(issue.address || "Location not specified")}</div>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-top:.25rem;">👍 ${issue.upvotes || 0} upvotes &nbsp;·&nbsp; Reported ${date}</div>
+          ${issue.location && issue.location.lat ? `<div id="detail-mini-map" style="height:180px;border-radius:10px;margin-top:.75rem;"></div>` : ""}
+        `;
+        // Mini-map in detail
+        if (issue.location && issue.location.lat) {
+          const miniMap = L.map("detail-mini-map").setView([issue.location.lat, issue.location.lng], 15);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(miniMap);
+          L.marker([issue.location.lat, issue.location.lng], { icon: createMarkerIcon(issue.category, issue.status) }).addTo(miniMap);
+        }
+      } catch(e) { document.getElementById("detail-body").innerHTML = "<p>Could not load issue details.</p>"; }
+    }
+    bindModalClose("issue-detail-modal");
+
+    // ── Dashboard Map ──
+    function initDashMap() {
+      dashMap = initMap("dash-map");
+      if (allIssues.length) renderDashMapMarkers();
+      document.querySelectorAll("[data-map-status]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("[data-map-status]").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          renderDashMapMarkers(btn.dataset.mapStatus);
+        });
+      });
+    }
+    function renderDashMapMarkers(statusFilter = "all") {
+      dashMarkers.forEach(m => m.remove()); dashMarkers = [];
+      const list = statusFilter === "all" ? allIssues : allIssues.filter(i => i.status === statusFilter);
+      list.forEach(issue => {
+        if (!issue.location || !issue.location.lat) return;
+        const m = L.marker([issue.location.lat, issue.location.lng], { icon: createMarkerIcon(issue.category, issue.status) })
+          .addTo(dashMap)
+          .on("click", () => openIssueDetail(issue.id));
+        dashMarkers.push(m);
+      });
+    }
+
+    // ── Report Map (pin picker) ──
+    function initReportMap() {
+      reportMap = initMap("report-map", DEFAULT_MAP_CENTER, 13);
+      reportMap.on("click", (e) => {
+        pinLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
+        if (reportPin) reportPin.remove();
+        reportPin = L.marker([pinLocation.lat, pinLocation.lng], { draggable: true }).addTo(reportMap);
+        reportPin.on("dragend", (ev) => {
+          pinLocation = { lat: ev.target.getLatLng().lat, lng: ev.target.getLatLng().lng };
+          updatePinCoords();
+        });
+        updatePinCoords();
+      });
+    }
+    function updatePinCoords() {
+      if (!pinLocation) return;
+      document.getElementById("pin-coords").textContent = `${pinLocation.lat.toFixed(5)}, ${pinLocation.lng.toFixed(5)}`;
+    }
+    document.getElementById("locate-me-btn").addEventListener("click", async () => {
+      const loc = await getUserLocation();
+      if (!loc) { showToast("Could not get your location.", "warning"); return; }
+      pinLocation = loc;
+      if (!reportMap) initReportMap();
+      reportMap.setView([loc.lat, loc.lng], 16);
+      if (reportPin) reportPin.remove();
+      reportPin = L.marker([loc.lat, loc.lng], { draggable: true }).addTo(reportMap);
+      reportPin.on("dragend", ev => { pinLocation = { lat: ev.target.getLatLng().lat, lng: ev.target.getLatLng().lng }; updatePinCoords(); });
+      updatePinCoords();
+    });
+
+    // Photo upload preview
+    document.getElementById("photo-input").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { showToast("Photo must be under 5MB.", "warning"); return; }
+      const preview = document.getElementById("upload-preview");
+      preview.src = URL.createObjectURL(file);
+      preview.classList.add("visible");
+    });
+    // Drag-and-drop
+    const ua = document.getElementById("upload-area");
+    ua.addEventListener("dragover", e => { e.preventDefault(); ua.classList.add("dragging"); });
+    ua.addEventListener("dragleave", () => ua.classList.remove("dragging"));
+    ua.addEventListener("drop", e => {
+      e.preventDefault(); ua.classList.remove("dragging");
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) {
+        const input = document.getElementById("photo-input");
+        const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+        const preview = document.getElementById("upload-preview");
+        preview.src = URL.createObjectURL(file); preview.classList.add("visible");
+      }
+    });
+
+    // Populate category select in form
+    populateCategorySelect(document.getElementById("issue-category"), false);
+
+    // ── Submit Issue ──
+    document.getElementById("submit-issue-btn").addEventListener("click", async () => {
+      // Clear errors
+      ["title-error","cat-error","addr-error","location-error"].forEach(id => {
+        const el = document.getElementById(id); el.textContent = ""; el.classList.add("hidden");
+      });
+
+      const title    = document.getElementById("issue-title").value.trim();
+      const category = document.getElementById("issue-category").value;
+      const desc     = document.getElementById("issue-desc").value.trim();
+      const address  = document.getElementById("issue-address").value.trim();
+      const photoFile = document.getElementById("photo-input").files[0];
+      let valid = true;
+
+      if (!title)    { showFieldErr("title-error",    "Title is required.");    valid = false; }
+      if (!category) { showFieldErr("cat-error",      "Select a category.");    valid = false; }
+      if (!address)  { showFieldErr("addr-error",     "Address is required.");  valid = false; }
+      if (!pinLocation) { showFieldErr("location-error", "Click the map to set a location."); valid = false; }
+      if (!valid) return;
+
+      const btn = document.getElementById("submit-issue-btn");
+      btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Submitting…`;
+
+      try {
+        let photoURL = null;
+
+        // Upload photo if provided
+        if (photoFile) {
+          document.getElementById("upload-progress-wrap").classList.remove("hidden");
+          const filename = `issues/${currentUser.uid}/${uniqueFilename(photoFile)}`;
+          photoURL = await uploadPhoto(photoFile, filename, pct => {
+            document.getElementById("upload-progress-fill").style.width = pct + "%";
+            document.getElementById("upload-progress-text").textContent = `Uploading… ${pct}%`;
+          });
+        }
+
+        await createIssue({
+          title,
+          category,
+          description: desc,
+          address,
+          location: pinLocation,
+          photoURL,
+          reportedBy:    currentUser.uid,
+          reporterName:  currentUser.displayName || currentUser.email || "Anonymous",
+          reporterEmail: currentUser.email || ""
+        });
+
+        showToast("Issue reported successfully! 🎉", "success");
+        // Reset form
+        document.getElementById("issue-title").value    = "";
+        document.getElementById("issue-category").value = "";
+        document.getElementById("issue-desc").value     = "";
+        document.getElementById("issue-address").value  = "";
+        document.getElementById("upload-preview").classList.remove("visible");
+        document.getElementById("upload-progress-wrap").classList.add("hidden");
+        document.getElementById("photo-input").value = "";
+        if (reportPin) { reportPin.remove(); reportPin = null; }
+        pinLocation = null;
+        document.getElementById("pin-coords").textContent = "";
+
+        // Reload data and switch to my reports
+        await Promise.all([loadStats(), loadAllIssues(), loadMyIssues()]);
+        switchTab("my-reports");
+
+      } catch(e) {
+        showToast("Failed to submit: " + e.message, "error");
+      }
+
+      btn.disabled = false; btn.innerHTML = "🚀 Submit Report";
+    });
+
+    function showFieldErr(id, msg) {
+      const el = document.getElementById(id); el.textContent = msg; el.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>

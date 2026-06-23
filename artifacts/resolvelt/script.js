@@ -11,12 +11,13 @@
 //   Project Settings → Your apps → Web app
 // ─────────────────────────────────────────────
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyC0rIkvS7EjrqKQ1s6CmVFLomYbIJ9Aw7M",
+  authDomain:        "resolvelt-23fa0.firebaseapp.com",
+  projectId:         "resolvelt-23fa0",
+  storageBucket:     "resolvelt-23fa0.firebasestorage.app",
+  messagingSenderId: "478641195425",
+  appId:             "1:478641195425:web:95dad4fd36f9c5a53763e0",
+  measurementId:     "G-PVXCG1R41S"
 };
 
 // ─────────────────────────────────────────────
