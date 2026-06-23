@@ -129,7 +129,6 @@
               <table>
                 <thead>
                   <tr>
-                    <th>Photo</th>
                     <th>Issue</th>
                     <th>Category</th>
                     <th>Status</th>
@@ -194,7 +193,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./script.js"></script>
 
@@ -324,12 +322,6 @@
 
         return `
           <tr data-issue-id="${issue.id}">
-            <td>
-              ${issue.photoURL
-                ? `<img src="${issue.photoURL}" class="table-thumb" alt="">`
-                : `<div class="table-thumb" style="display:flex;align-items:center;justify-content:center;background:var(--surface-2);font-size:1.2rem;">${getCategoryEmoji(issue.category)}</div>`
-              }
-            </td>
             <td style="max-width:220px;">
               <div style="font-weight:700;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(issue.title)}</div>
               <div style="font-size:.77rem;color:var(--text-muted);margin-top:.2rem;">📍 ${escHtml((issue.address||"").substring(0,40))}</div>

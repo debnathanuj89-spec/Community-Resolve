@@ -155,21 +155,6 @@
                   <span class="form-error hidden" id="location-error"></span>
                 </div>
 
-                <!-- Photo Upload -->
-                <div class="form-group">
-                  <label class="form-label">Photo <span style="color:var(--text-muted);font-weight:400;">(optional, max 5MB)</span></label>
-                  <div class="upload-area" id="upload-area" onclick="document.getElementById('photo-input').click()">
-                    <div>📷 Click or drag &amp; drop a photo here</div>
-                    <input type="file" id="photo-input" accept="image/*" capture="environment">
-                    <img id="upload-preview" class="upload-preview" alt="Preview">
-                  </div>
-                  <!-- Upload progress -->
-                  <div id="upload-progress-wrap" class="hidden mt-1">
-                    <div class="progress-bar"><div class="progress-fill" id="upload-progress-fill" style="width:0%"></div></div>
-                    <span id="upload-progress-text" style="font-size:.78rem;color:var(--text-muted);">Uploading…</span>
-                  </div>
-                </div>
-
                 <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
                   <button class="btn btn-primary btn-lg" id="submit-issue-btn">🚀 Submit Report</button>
                   <button class="btn btn-ghost" id="cancel-report-btn">Cancel</button>
@@ -201,7 +186,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./script.js"></script>
 
@@ -386,7 +370,7 @@
         const date      = issue.createdAt ? formatDate(issue.createdAt.toDate ? issue.createdAt.toDate() : new Date(issue.createdAt)) : "";
         document.getElementById("detail-title").textContent = issue.title;
         document.getElementById("detail-body").innerHTML = `
-          ${issue.photoURL ? `<img src="${issue.photoURL}" style="width:100%;max-height:260px;object-fit:cover;border-radius:10px;">` : ""}
+          <div style="font-size:3rem;text-align:center;margin-bottom:.5rem;">${getCategoryEmoji(issue.category)}</div>
           <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;">
             ${renderCategoryBadge(issue.category)}
             ${renderStatusBadge(issue.status)}
@@ -460,30 +444,6 @@
       updatePinCoords();
     });
 
-    // Photo upload preview
-    document.getElementById("photo-input").addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { showToast("Photo must be under 5MB.", "warning"); return; }
-      const preview = document.getElementById("upload-preview");
-      preview.src = URL.createObjectURL(file);
-      preview.classList.add("visible");
-    });
-    // Drag-and-drop
-    const ua = document.getElementById("upload-area");
-    ua.addEventListener("dragover", e => { e.preventDefault(); ua.classList.add("dragging"); });
-    ua.addEventListener("dragleave", () => ua.classList.remove("dragging"));
-    ua.addEventListener("drop", e => {
-      e.preventDefault(); ua.classList.remove("dragging");
-      const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith("image/")) {
-        const input = document.getElementById("photo-input");
-        const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
-        const preview = document.getElementById("upload-preview");
-        preview.src = URL.createObjectURL(file); preview.classList.add("visible");
-      }
-    });
-
     // Populate category select in form
     populateCategorySelect(document.getElementById("issue-category"), false);
 
@@ -498,7 +458,6 @@
       const category = document.getElementById("issue-category").value;
       const desc     = document.getElementById("issue-desc").value.trim();
       const address  = document.getElementById("issue-address").value.trim();
-      const photoFile = document.getElementById("photo-input").files[0];
       let valid = true;
 
       if (!title)    { showFieldErr("title-error",    "Title is required.");    valid = false; }
@@ -511,25 +470,12 @@
       btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Submitting…`;
 
       try {
-        let photoURL = null;
-
-        // Upload photo if provided
-        if (photoFile) {
-          document.getElementById("upload-progress-wrap").classList.remove("hidden");
-          const filename = `issues/${currentUser.uid}/${uniqueFilename(photoFile)}`;
-          photoURL = await uploadPhoto(photoFile, filename, pct => {
-            document.getElementById("upload-progress-fill").style.width = pct + "%";
-            document.getElementById("upload-progress-text").textContent = `Uploading… ${pct}%`;
-          });
-        }
-
         await createIssue({
           title,
           category,
           description: desc,
           address,
           location: pinLocation,
-          photoURL,
           reportedBy:    currentUser.uid,
           reporterName:  currentUser.displayName || currentUser.email || "Anonymous",
           reporterEmail: currentUser.email || ""
@@ -541,9 +487,6 @@
         document.getElementById("issue-category").value = "";
         document.getElementById("issue-desc").value     = "";
         document.getElementById("issue-address").value  = "";
-        document.getElementById("upload-preview").classList.remove("visible");
-        document.getElementById("upload-progress-wrap").classList.add("hidden");
-        document.getElementById("photo-input").value = "";
         if (reportPin) { reportPin.remove(); reportPin = null; }
         pinLocation = null;
         document.getElementById("pin-coords").textContent = "";

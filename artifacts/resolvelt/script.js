@@ -59,7 +59,7 @@ const ADMIN_EMAIL_DOMAIN = "@admin.resolvelt.com";
 // ─────────────────────────────────────────────
 // FIREBASE INITIALIZATION
 // ─────────────────────────────────────────────
-let app, auth, db, storage;
+let app, auth, db;
 
 /**
  * Initialize Firebase. Call this at the start of each page.
@@ -81,7 +81,6 @@ function initFirebase() {
 
   auth    = firebase.auth();
   db      = firebase.firestore();
-  storage = firebase.storage();
 
   // Enable Firestore offline persistence
   db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
@@ -281,38 +280,6 @@ async function getDashboardStats() {
 }
 
 // ─────────────────────────────────────────────
-// STORAGE HELPERS
-// ─────────────────────────────────────────────
-
-/**
- * Upload a photo to Firebase Storage.
- * Returns the download URL.
- * @param {File} file - image file to upload
- * @param {string} path - storage path, e.g. "issues/abc123.jpg"
- * @param {function} onProgress - optional progress callback (0–100)
- */
-function uploadPhoto(file, path, onProgress) {
-  return new Promise((resolve, reject) => {
-    const ref = storage.ref(path);
-    const task = ref.put(file);
-    task.on(
-      "state_changed",
-      (snapshot) => {
-        if (onProgress) {
-          const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          onProgress(pct);
-        }
-      },
-      reject,
-      async () => {
-        const url = await task.snapshot.ref.getDownloadURL();
-        resolve(url);
-      }
-    );
-  });
-}
-
-// ─────────────────────────────────────────────
 // MAP HELPERS (Leaflet)
 // ─────────────────────────────────────────────
 
@@ -400,7 +367,6 @@ function addIssuesToMap(map, issues, onClick) {
           ${catLabel} &nbsp;·&nbsp; ${statusLabel}
         </div>
         <div style="font-size:0.78rem;color:#374151;">${escHtml(issue.description || "").substring(0, 80)}${(issue.description || "").length > 80 ? "…" : ""}</div>
-        ${issue.photoURL ? `<img src="${issue.photoURL}" style="width:100%;border-radius:6px;margin-top:6px;max-height:100px;object-fit:cover;">` : ""}
         <div style="margin-top:6px;font-size:0.75rem;color:#9ca3af;">👍 ${issue.upvotes || 0} upvotes</div>
       </div>
     `);
@@ -502,10 +468,7 @@ function renderIssueCard(issue, userId, showVote = true) {
   return `
     <div class="issue-card" data-id="${issue.id}">
       <div class="issue-card-img">
-        ${issue.photoURL
-          ? `<img src="${issue.photoURL}" alt="Issue photo" loading="lazy">`
-          : `<span>${getCategoryEmoji(issue.category)}</span>`
-        }
+        <span>${getCategoryEmoji(issue.category)}</span>
       </div>
       <div class="issue-card-body">
         <div class="issue-meta">
@@ -607,12 +570,6 @@ function getCategoryLabel(value) {
 function getStatusLabel(value) {
   const s = ISSUE_STATUSES.find(s => s.value === value);
   return s ? s.label : value;
-}
-
-/** Generate a unique filename for storage. */
-function uniqueFilename(file) {
-  const ext = file.name.split(".").pop();
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 }
 
 /** Validate email format. */

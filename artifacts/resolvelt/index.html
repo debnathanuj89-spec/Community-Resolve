@@ -85,7 +85,7 @@
       <section class="page-section">
         <h2 class="text-center mb-3">How RESOLVELT Works</h2>
         <div class="grid-3">
-          <div class="card" style="text-align:center;"><div class="card-body"><div style="font-size:2.5rem;margin-bottom:.75rem">📸</div><h3>1. Spot &amp; Report</h3><p>See a problem? Snap a photo, describe it, drop a pin on the map. Takes 60 seconds.</p></div></div>
+          <div class="card" style="text-align:center;"><div class="card-body"><div style="font-size:2.5rem;margin-bottom:.75rem">📝</div><h3>1. Spot &amp; Report</h3><p>See a problem? Describe it, drop a pin on the map, and submit. Takes 60 seconds.</p></div></div>
           <div class="card" style="text-align:center;"><div class="card-body"><div style="font-size:2.5rem;margin-bottom:.75rem">👍</div><h3>2. Community Upvotes</h3><p>Neighbors upvote issues they care about most, helping prioritize what gets fixed first.</p></div></div>
           <div class="card" style="text-align:center;"><div class="card-body"><div style="font-size:2.5rem;margin-bottom:.75rem">✅</div><h3>3. Track Resolution</h3><p>Watch reports move from Open → In Progress → Resolved. Real accountability, real results.</p></div></div>
         </div>
@@ -104,7 +104,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- App -->
@@ -167,7 +166,6 @@
             <strong style="font-size:.9rem">${escHtml(issue.title)}</strong>
             <div style="margin:4px 0;font-size:.75rem;color:#6b7280">${catLabel} · ${getStatusLabel(issue.status)}</div>
             <div style="font-size:.78rem;color:#374151">${escHtml((issue.description||'').substring(0,90))}${(issue.description||'').length>90?'…':''}</div>
-            ${issue.photoURL?`<img src="${issue.photoURL}" style="width:100%;border-radius:6px;margin-top:6px;max-height:90px;object-fit:cover">`:''}
             <div style="margin-top:6px;font-size:.75rem;color:#9ca3af">👍 ${issue.upvotes||0} upvotes</div>
           </div>
         `);
