@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "RESOLVELT"
+version = "1.0.0"
+id = "artifacts/resolvelt"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23266
+
+[services.development]
+run = "pnpm --filter @workspace/resolvelt run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/resolvelt", "run", "build" ]
+publicDir = "artifacts/resolvelt/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23266"
+BASE_PATH = "/"
