@@ -155,18 +155,24 @@ async function isAdmin(user) {
  * Create or update user profile in Firestore on sign-in.
  */
 async function ensureUserProfile(user, extraData = {}) {
-  if (!user || !db) return;
-  const userRef = db.collection(COLLECTIONS.USERS).doc(user.uid);
-  const snap = await userRef.get();
+  if (!user || !db) throw new Error("Firebase not initialized");
+  const fullName = extraData.displayName || user.displayName || "Anonymous";
+  const userRef  = db.collection(COLLECTIONS.USERS).doc(user.uid);
+  const snap     = await userRef.get();
   if (!snap.exists) {
     await userRef.set({
-      uid:         user.uid,
-      email:       user.email || "",
-      displayName: user.displayName || extraData.displayName || "Anonymous",
-      photoURL:    user.photoURL  || "",
-      role:        extraData.role || "resident",
-      createdAt:   firebase.firestore.FieldValue.serverTimestamp()
+      uid:       user.uid,
+      fullName:  fullName,
+      email:     user.email || "",
+      role:      extraData.role || "resident",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+  } else {
+    // Backfill fullName if missing (for existing docs that used displayName)
+    const data = snap.data();
+    if (!data.fullName && fullName !== "Anonymous") {
+      await userRef.update({ fullName });
+    }
   }
 }
 

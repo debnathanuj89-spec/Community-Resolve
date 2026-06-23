@@ -104,8 +104,9 @@
     /* ── Signup Page Logic ── */
     initFirebase();
 
-    // Redirect if already logged in
-    auth.onAuthStateChanged(u => { if (u) location.href = "./dashboard.html"; });
+    // Redirect if already logged in (suppressed during active signup to avoid race condition)
+    let _signingUp = false;
+    auth.onAuthStateChanged(u => { if (u && !_signingUp) location.href = "./dashboard.html"; });
 
     // Toggle password
     document.getElementById("toggle-pw").addEventListener("click", () => {
@@ -162,30 +163,33 @@
       btn.disabled = true;
       btn.innerHTML = `<span class="spinner"></span> Creating account…`;
 
+      _signingUp = true;
       try {
         const cred = await auth.createUserWithEmailAndPassword(email, pw);
-        // Update Firebase Auth display name
         await cred.user.updateProfile({ displayName: name });
-        // Create Firestore profile
         await ensureUserProfile(cred.user, { displayName: name, role });
         showToast("Account created! Welcome to RESOLVELT.", "success");
         location.href = "./dashboard.html";
       } catch (err) {
+        _signingUp = false;
         btn.disabled = false;
         btn.textContent = "Create Account";
-        showAuthError(firebaseErrorMsg(err.code));
+        const msg = err.code ? firebaseErrorMsg(err.code) : (err.message || "Something went wrong.");
+        showAuthError(msg);
       }
     });
 
     // Google Sign-Up
     document.getElementById("google-btn").addEventListener("click", async () => {
       const provider = new firebase.auth.GoogleAuthProvider();
+      _signingUp = true;
       try {
         const result = await auth.signInWithPopup(provider);
         const role = document.querySelector('[name="role"]:checked').value;
         await ensureUserProfile(result.user, { role });
         location.href = "./dashboard.html";
       } catch (err) {
+        _signingUp = false;
         if (err.code !== "auth/popup-closed-by-user") showAuthError(firebaseErrorMsg(err.code));
       }
     });
