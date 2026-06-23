@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign Up — RESOLVELT</title>
+  <title>Sign Up — LocalFix</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
@@ -14,7 +14,7 @@
     <div class="auth-card">
 
       <div class="auth-card-header">
-        <div class="logo">RESOLVE<span>LT</span></div>
+        <div class="logo">Local<span>Fix</span></div>
         <p>Join your neighbors. Make your community better.</p>
       </div>
 
@@ -168,7 +168,7 @@
         const cred = await auth.createUserWithEmailAndPassword(email, pw);
         await cred.user.updateProfile({ displayName: name });
         await ensureUserProfile(cred.user, { displayName: name, role });
-        showToast("Account created! Welcome to RESOLVELT.", "success");
+        showToast("Account created! Welcome to LocalFix.", "success");
         location.href = "./dashboard.html";
       } catch (err) {
         _signingUp = false;

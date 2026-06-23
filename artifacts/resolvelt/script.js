@@ -1,5 +1,5 @@
 /* ============================================
-   RESOLVELT — Shared JavaScript
+   LocalFix — Shared JavaScript
    Firebase config, auth helpers, utilities
    ============================================ */
 
@@ -68,7 +68,7 @@ let app, auth, db;
 function initFirebase() {
   // Detect placeholder config
   if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") {
-    console.warn("⚠️  RESOLVELT: Firebase config is not set. Edit script.js and replace the placeholder values.");
+    console.warn("⚠️  LocalFix: Firebase config is not set. Edit script.js and replace the placeholder values.");
     showToast("Firebase is not configured yet. Please update script.js with your Firebase credentials.", "warning", 8000);
     return false;
   }
