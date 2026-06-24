@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — LocalFix</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="./style.css">
 </head>
@@ -16,9 +16,9 @@
     <div class="container">
       <a href="./index.html" class="navbar-brand">Local<span>Fix</span></a>
       <div class="navbar-links">
-        <span id="nav-user-name" style="color:rgba(255,255,255,.7);font-size:.875rem;"></span>
+        <span id="nav-user-name" style="color:rgba(255,255,255,.6);font-size:.8rem;"></span>
         <a href="./index.html">Home</a>
-        <button id="logout-btn" style="background:rgba(255,255,255,.12);color:#fff;border:none;padding:.4rem .75rem;border-radius:6px;cursor:pointer;font-size:.875rem;font-family:inherit;">Sign Out</button>
+        <button id="logout-btn" class="navbar-links">Sign Out</button>
       </div>
     </div>
   </nav>
@@ -45,7 +45,7 @@
             <a href="#report-new"  data-tab="report-new" id="sidebar-report-btn" style="color:var(--accent);font-weight:700;"><span class="icon">➕</span> Report Issue</a>
           </nav>
           <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">
-            <a href="./admin.html" id="admin-link" class="hidden" style="display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:8px;color:var(--primary);font-size:.875rem;font-weight:600;background:rgba(13,79,140,.06);">
+            <a href="./admin.html" id="admin-link" class="hidden">
               <span>🛡️</span> Admin Panel
             </a>
           </div>
