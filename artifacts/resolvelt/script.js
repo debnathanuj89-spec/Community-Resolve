@@ -159,18 +159,18 @@ function requireAuth(redirectUrl = "./login.html") {
 }
 
 /**
- * Check if user is admin based on email domain or stored role.
+ * Check if user is admin — Firestore is the single source of truth.
+ * Role can only be set to "admin" by editing the Firestore document directly
+ * or via the admin dashboard; it is never trusted from the client at signup.
  */
 async function isAdmin(user) {
   if (!user) return false;
-  // Quick check by email domain (demo approach)
-  if (user.email && user.email.endsWith(ADMIN_EMAIL_DOMAIN)) return true;
-  // Check Firestore user document for role
   try {
     const doc = await db.collection(COLLECTIONS.USERS).doc(user.uid).get();
-    if (doc.exists && doc.data().role === "admin") return true;
-  } catch (e) {}
-  return false;
+    return doc.exists && doc.data().role === "admin";
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -182,11 +182,13 @@ async function ensureUserProfile(user, extraData = {}) {
   const userRef  = db.collection(COLLECTIONS.USERS).doc(user.uid);
   const snap     = await userRef.get();
   if (!snap.exists) {
+    // New accounts are always created as "resident".
+    // Admin role can only be granted by editing Firestore directly.
     await userRef.set({
       uid:       user.uid,
       fullName:  fullName,
       email:     user.email || "",
-      role:      extraData.role || "resident",
+      role:      "resident",
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   } else {

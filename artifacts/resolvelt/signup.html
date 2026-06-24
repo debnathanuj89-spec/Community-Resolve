@@ -55,22 +55,6 @@
             <span class="form-error hidden" id="cpw-error"></span>
           </div>
 
-          <!-- Account type -->
-          <div class="form-group mb-2">
-            <label class="form-label">Account Type</label>
-            <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-              <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.875rem;flex:1;min-width:120px;border:1.5px solid var(--border);border-radius:8px;padding:.6rem .85rem;transition:border-color .2s;" id="role-resident-label">
-                <input type="radio" name="role" value="resident" checked style="accent-color:var(--primary);">
-                🏘️ Resident
-              </label>
-              <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.875rem;flex:1;min-width:120px;border:1.5px solid var(--border);border-radius:8px;padding:.6rem .85rem;transition:border-color .2s;" id="role-admin-label">
-                <input type="radio" name="role" value="admin" style="accent-color:var(--primary);">
-                🛡️ Admin
-              </label>
-            </div>
-            <span class="form-hint">Admins can update issue statuses and manage all reports.</span>
-          </div>
-
           <button type="submit" class="btn btn-primary btn-block btn-lg mt-1" id="signup-btn">
             Create Account
           </button>
@@ -130,17 +114,6 @@
       bar.style.background = colors[score];
     });
 
-    // Highlight selected role card
-    document.querySelectorAll('[name="role"]').forEach(radio => {
-      radio.addEventListener("change", () => {
-        document.getElementById("role-resident-label").style.borderColor = "var(--border)";
-        document.getElementById("role-admin-label").style.borderColor    = "var(--border)";
-        document.getElementById(`role-${radio.value}-label`).style.borderColor = "var(--primary)";
-      });
-    });
-    // Set default highlight
-    document.getElementById("role-resident-label").style.borderColor = "var(--primary)";
-
     // Form submission
     document.getElementById("signup-form").addEventListener("submit", async e => {
       e.preventDefault();
@@ -150,7 +123,7 @@
       const email   = document.getElementById("email").value.trim();
       const pw      = document.getElementById("password").value;
       const cpw     = document.getElementById("confirm-pw").value;
-      const role    = document.querySelector('[name="role"]:checked').value;
+      const role    = "resident"; // All self-registered users are residents
       let valid = true;
 
       if (!name)              { showFieldError("name-error",  "Name is required."); valid = false; }
@@ -185,8 +158,7 @@
       _signingUp = true;
       try {
         const result = await auth.signInWithPopup(provider);
-        const role = document.querySelector('[name="role"]:checked').value;
-        await ensureUserProfile(result.user, { role });
+        await ensureUserProfile(result.user, { role: "resident" });
         location.href = "./dashboard.html";
       } catch (err) {
         _signingUp = false;
