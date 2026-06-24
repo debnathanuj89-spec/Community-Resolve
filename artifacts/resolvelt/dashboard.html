@@ -155,14 +155,13 @@
 
                 <!-- Map pin picker -->
                 <div class="form-group">
-                  <label class="form-label">Pin on Map <span style="color:var(--text-muted);font-weight:400;">(click to set location)</span></label>
+                  <label class="form-label">Location Pin <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
                   <div style="display:flex;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap;">
                     <button type="button" class="btn btn-ghost btn-sm" id="locate-me-btn">📍 Use My Location</button>
                     <span id="pin-coords" style="font-size:.8rem;color:var(--text-muted);align-self:center;"></span>
                   </div>
                   <div id="report-map" style="height:240px;border-radius:10px;border:1.5px solid var(--border);"></div>
-                  <span class="form-hint" style="font-size:.78rem;color:var(--text-muted);">📌 Pin must be within Tripura state boundaries.</span>
-                  <span class="form-error hidden" id="location-error"></span>
+                  <span class="form-hint" style="font-size:.78rem;color:var(--text-muted);">📌 Click the map to drop a pin. Location is optional — pin must be within Tripura if provided.</span>
                 </div>
 
                 <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
@@ -469,7 +468,7 @@
     // ── Submit Issue ──
     document.getElementById("submit-issue-btn").addEventListener("click", async () => {
       // Clear errors
-      ["title-error","dist-error","cat-error","addr-error","location-error"].forEach(id => {
+      ["title-error","dist-error","cat-error","addr-error"].forEach(id => {
         const el = document.getElementById(id); el.textContent = ""; el.classList.add("hidden");
       });
 
@@ -484,7 +483,6 @@
       if (!district) { showFieldErr("dist-error",     "Select a district.");      valid = false; }
       if (!category) { showFieldErr("cat-error",      "Select a category.");      valid = false; }
       if (!address)  { showFieldErr("addr-error",     "Address is required.");    valid = false; }
-      if (!pinLocation) { showFieldErr("location-error", "Click the map to set a location within Tripura."); valid = false; }
       if (!valid) return;
 
       const btn = document.getElementById("submit-issue-btn");
