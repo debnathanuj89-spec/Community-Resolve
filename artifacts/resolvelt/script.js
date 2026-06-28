@@ -489,12 +489,41 @@ function bindModalClose(modalId) {
 
 /**
  * Render an issue card as HTML string.
+ * @param {object}  issue     - issue data object
+ * @param {string}  userId    - current user UID (or null for public)
+ * @param {boolean} showVote  - whether to show upvote button
+ * @param {boolean} listMode  - true = compact row (list view), false = full card (grid view)
  */
-function renderIssueCard(issue, userId, showVote = true) {
+function renderIssueCard(issue, userId, showVote = true, listMode = false) {
   const catInfo  = ISSUE_CATEGORIES.find(c => c.value === issue.category) || ISSUE_CATEGORIES[7];
   const statInfo = ISSUE_STATUSES.find(s => s.value === issue.status)     || ISSUE_STATUSES[0];
   const date     = issue.createdAt ? formatDate(issue.createdAt.toDate ? issue.createdAt.toDate() : new Date(issue.createdAt)) : "";
 
+  // ── Row / list mode (compact horizontal layout) ──
+  if (listMode) {
+    return `
+      <div class="issue-row" data-id="${issue.id}">
+        <div class="issue-row-icon ${catInfo.cssClass}">${getCategoryEmoji(issue.category)}</div>
+        <div class="issue-row-body">
+          <div class="issue-row-title">${escHtml(issue.title)}</div>
+          <div class="issue-row-meta">
+            <span class="badge ${statInfo.badgeClass}">${statInfo.label}</span>
+            <span class="badge ${catInfo.cssClass}">${catInfo.label}</span>
+            ${issue.district ? `<span class="issue-row-district">· ${escHtml(getDistrictLabel(issue.district).replace(/📍\s*|🏙️\s*/g,''))}</span>` : ""}
+          </div>
+        </div>
+        <div class="issue-row-right">
+          ${showVote ? `
+          <button class="upvote-btn" data-issue-id="${issue.id}" ${!userId ? 'title="Sign in to vote"' : ""}>
+            👍 <span class="vote-count">${issue.upvotes || 0}</span>
+          </button>` : ""}
+          <span class="issue-date">${date}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Card / grid mode (full vertical card) ──
   return `
     <div class="issue-card" data-id="${issue.id}">
       <div class="issue-card-img">
