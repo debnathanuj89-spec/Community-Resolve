@@ -1,4 +1,4 @@
 [build]
   base    = "."
-  command = "pnpm --filter @workspace/mockup-sandbox run build"
-  publish = "artifacts/mockup-sandbox/dist"
+  command = "pnpm --filter @workspace/resolvelt run build"
+  publish = "artifacts/resolvelt/dist/public"
