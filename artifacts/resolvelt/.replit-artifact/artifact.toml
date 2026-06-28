@@ -18,8 +18,7 @@ localPort = 23266
 run = "pnpm --filter @workspace/resolvelt run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/resolvelt", "run", "build" ]
-publicDir = "artifacts/resolvelt/dist/public"
+publicDir = "artifacts/resolvelt"
 serve = "static"
 
 [[services.production.rewrites]]
